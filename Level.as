@@ -20,6 +20,8 @@ package
 		
 		public var n: int;
 		
+		public static var startTime: int;
+		
 		public function Level (_n: int)
 		{
 			n = _n;
@@ -27,11 +29,21 @@ package
 			if (n == 1) {
 				AudioControl.play();
 				
+				startTime = getTimer();
+				
 				addChild(new MyTextField(320, 25, "Click to blow out candles", 0xFFFFFF, "center", 25));
 			} else if (n == 23) {
 				addChild(new MyTextField(320, 20, "Happy Birthday\nHennell", 0xFFFFFF, "center", 60));
+				
+				if (Kongregate.api) {
+					Kongregate.api.stats.submit("Time", getTimer() - startTime);
+				}
 			} else {
 				addChild(new MyTextField(320, 25, "Level " + n, 0xFFFFFF, "center", 45));
+			}
+			
+			if (Kongregate.api) {
+				Kongregate.api.stats.submit("Level", n);
 			}
 			
 			var cake: DisplayObject = new CakeGfx();
@@ -69,6 +81,10 @@ package
 		}
 		
 		public function remove (f: Flame): void {
+			if (Kongregate.api) {
+				Kongregate.api.stats.submit("Candles", 1);
+			}
+			
 			if (n == 23) {
 				f.alpha = 0;
 				
@@ -83,7 +99,9 @@ package
 			flameCount--;
 			
 			if (flameCount == 0) {
-				Main.screen = new Level(n+1);
+				timer = new Timer(500, 1);
+				timer.addEventListener(TimerEvent.TIMER, function (param: *): void {Main.screen = new Level(n+1);});
+				timer.start();
 			}
 			
 			for (var i: int = 0; i < 4; i++) {

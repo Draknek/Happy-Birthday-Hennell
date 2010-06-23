@@ -46,6 +46,8 @@ package
 			
 			Input.attach(stage);
 			
+			Kongregate.connect(this);
+			
 			Preloader.init(startup);
 			
 			time = getTimer();
