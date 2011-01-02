@@ -13,6 +13,10 @@ package
 		
 		public static function connect (obj: DisplayObjectContainer): void
 		{
+			var swfPath:String = LoaderInfo(obj.root.loaderInfo).url;
+			
+			if (swfPath.indexOf("kongregate") == -1) return;
+			
 			// Pull the API path from the FlashVars
 			var paramObj:Object = LoaderInfo(obj.root.loaderInfo).parameters;
 
