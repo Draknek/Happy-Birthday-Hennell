@@ -15,7 +15,7 @@ package
 		public static var mute : Boolean = false;
 		
 		public static function play (): void {
-			musicChannel = music.play(0, int.MAX_VALUE);
+			musicChannel = music.play();
 		}
 	}
 }

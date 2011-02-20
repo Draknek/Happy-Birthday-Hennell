@@ -7,28 +7,29 @@ package
 	{
 		public function MainMenu ()
 		{
-			addChild(new MyTextField(320, 20, "Hennell", 0xFFFFFF, "center", 50));
+			addChild(new MyTextField(320, 20, "Time-Dilation\nBirthday Buddies", 0xFFFFFF, "center", 50));
 			
-			addChild(new MyTextField(320, 150, "It is your birthday.", 0xFFFFFF, "center", 25));
-			addChild(new MyTextField(320, 200, "I didn't get you a present.", 0xFFFFFF, "center", 25));
-			addChild(new MyTextField(320, 250, "And I haven't made a game\nfor KnP Pirate Kart 2.", 0xFFFFFF, "center", 25));
-			addChild(new MyTextField(320, 350, "Fortunately there is a solution\nto both these problems!", 0xFFFFFF, "center", 25));
+			var newGame:Button = new Button("Invite friend", 30);
 			
-			//addChild(new MyTextField(320, 450, "(Make again click for playing)", 0xFFFFFF, "center", 16));
-		}
-		
-		public override function init (): void
-		{
-			stage.addEventListener(MouseEvent.MOUSE_DOWN, startGame);
-		}
-		
-		public override function update (): void {}
-		
-		private function startGame (param: * = null): void
-		{
-			stage.removeEventListener(MouseEvent.MOUSE_DOWN, startGame);
+			newGame.x = 320 - newGame.width*0.5;
+			newGame.y = 200;
 			
-			Main.screen = new Level(1);
+			addChild(newGame);
+			
+			var joinGame:Button = new Button("Join friend", 30);
+			
+			joinGame.x = 320 - joinGame.width*0.5;
+			joinGame.y = 320;
+			
+			addChild(joinGame);
+			
+			newGame.addEventListener(MouseEvent.CLICK, function ():void {
+				Main.screen = new Launchpad;
+			});
+			
+			joinGame.addEventListener(MouseEvent.CLICK, function ():void {
+				Main.screen = new Launchpad;
+			});
 		}
 	}
 }

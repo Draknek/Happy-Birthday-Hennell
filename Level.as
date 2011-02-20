@@ -3,6 +3,7 @@ package
 	import flash.display.*;
 	import flash.events.*;
 	import flash.utils.*;
+	import flash.geom.*;
 	
 	public class Level extends Screen
 	{
@@ -22,8 +23,33 @@ package
 		
 		public static var startTime: int;
 		
+		public var countDown:MyTextField;
+		
+		
+		public var stars: Vector.<Star> = new Vector.<Star>();
+		public var buffer:BitmapData;
+		
 		public function Level (_n: int)
 		{
+			var window:Shape = new Shape;
+			
+			window.graphics.lineStyle(3, 0xFFFFFF);
+			window.graphics.beginFill(0x0);
+			window.graphics.drawRoundRect(-200, 0, 400, 250, 20);
+			window.graphics.endFill();
+			
+			window.x = 320;
+			window.y = 60;
+			
+			addChild(window);
+			
+			buffer = new BitmapData(400, 250, true);
+			
+			var b:Bitmap = new Bitmap(buffer);
+			b.x = 320 - 200;
+			b.y = 60;
+			addChild(b);
+			
 			n = _n;
 			
 			if (n == 1) {
@@ -31,16 +57,16 @@ package
 				
 				startTime = getTimer();
 				
-				addChild(new MyTextField(320, 25, "Click to blow out candles", 0xFFFFFF, "center", 25));
-			} else if (n == 23) {
-				addChild(new MyTextField(320, 20, "Happy Birthday\nHennell", 0xFFFFFF, "center", 60));
-				
-				if (Kongregate.api) {
-					Kongregate.api.stats.submit("Time", getTimer() - startTime);
-				}
-			} else {
-				addChild(new MyTextField(320, 25, "Level " + n, 0xFFFFFF, "center", 45));
+				addChild(new MyTextField(320, 75, "Click candles to age", 0xFFFFFF, "center", 25));
+			} else if (n == 2) {
+				addChild(new MyTextField(320, 75, "Oldest person wins!", 0xFFFFFF, "center", 25));
 			}
+			
+			countDown = new MyTextField(320, 10, "00:00", 0xFFFFFF, "center", 40);
+			
+			updateTime();
+			
+			addChild(countDown);
 			
 			if (Kongregate.api) {
 				Kongregate.api.stats.submit("Level", n);
@@ -78,6 +104,21 @@ package
 				
 				addChild(flame);
 			}
+			
+			for (i = 0; i < 150; i++) {
+				var s: Star = new Star();
+				
+				s.vx = Math.random() * 3 + n;
+				s.size = int(s.vx-n) + 1;
+				s.vx *= 1.5;
+				s.vx += 1.0;
+				
+				s.x = Math.random() * (640 - s.size);
+				s.y = Math.random() * (480 - s.size);
+				
+				stars.push(s);
+			}
+			
 		}
 		
 		public function remove (f: Flame): void {
@@ -134,6 +175,8 @@ package
 		{
 			frame++;
 			
+			updateTime();
+			
 			//if (Math.random() < 0.15) {
 			if (frame % 10 == 0) {
 				bg();
@@ -144,8 +187,43 @@ package
 			}
 			
 			particles = particles.filter(removeParticlesFilter);
+			
+			var rect:Rectangle = buffer.rect;
+			buffer.fillRect(rect, 0x0);
+			
+			for each (var s: Star in stars) {
+				rect.x = s.x;
+				rect.y = s.y;
+				rect.width = s.size;
+				rect.height = s.size;
+				
+				buffer.fillRect(rect, 0xFFEEEEEE);
+								
+				s.x -= s.vx;
+				
+				if (s.x < s.size) {
+					s.x = buffer.width - s.vx*Math.random();
+					s.y = Math.random() * (buffer.height - s.size);
+				}
+			}
+			
 		}
 		
+		public function updateTime ():void
+		{
+			var t:int = getTimer() - startTime;
+			
+			t = 20 - t / 1000;
+			
+			var s:int = t % 60
+			
+			countDown.text = "0" + int(t / 60) + ":" + ((s < 10) ? "0" : "") + s;
+			
+			if (t <= 0) {
+				Launchpad.score = n;
+				Main.screen = new Launchpad;
+			}
+		}
 		
 		private function removeParticlesFilter (p: Smoke, index: int, arr: Array): Boolean
 		{

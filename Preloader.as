@@ -12,7 +12,7 @@ package
 			
 			Main.screen = preloader;
 			
-			preloader.stage.addEventListener(MouseEvent.MOUSE_DOWN, preloader.onMouseDown);
+			//preloader.stage.addEventListener(MouseEvent.MOUSE_DOWN, preloader.onMouseDown);
 		}
 		
 		private var startup: Function;
@@ -46,6 +46,8 @@ package
 			{
 				graphics.clear();
 				
+				startup(); return;
+				
 				text.scaleX = 2.5;
 				text.scaleY = 2.5;
 				
@@ -64,13 +66,13 @@ package
 			}
 		}
 		
-		private function onMouseDown(e:MouseEvent):void {
+		/*private function onMouseDown(e:MouseEvent):void {
 			if (hasLoaded())
 			{
 				stage.removeEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
 				startup();
 			}
-		}
+		}*/
 		
 		private function hasLoaded (): Boolean {
 			return (loaderInfo.bytesLoaded >= loaderInfo.bytesTotal);
