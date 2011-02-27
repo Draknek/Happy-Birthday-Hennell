@@ -221,7 +221,7 @@ package
 			
 			if (t <= 0) {
 				Launchpad.score = n;
-				Main.screen = new Launchpad;
+				Main.screen = new Launchpad("scores");
 			}
 		}
 		

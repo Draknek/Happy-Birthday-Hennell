@@ -4,6 +4,7 @@ package
 	import flash.events.*;
 	import flash.geom.*;
 	import flash.utils.*;
+	import flash.text.*;
 	
 	public class Launchpad extends Screen
 	{
@@ -31,8 +32,12 @@ package
 		public static var score:int = -1;
 		public static var player:String = "A";
 		
-		public function Launchpad ()
+		public var mode:String;
+		
+		public function Launchpad (_mode:String)
 		{
+			mode = _mode;
+			
 			addChild(new BgGfx);
 			
 			shipA.x = (640 - shipA.width*2)/3;
@@ -50,18 +55,44 @@ package
 			// USS PartyShip 9749
 			
 			addChild(pilotA);
-			return;
-			if (score < 0) {
-				waiting = false;
-				launchTime = getTimer() + 5999;
-				countDown = new MyTextField(320, 10, "00:00", 0xFFFFFF, "center", 40);
-				addChild(countDown);
-			} else {
+			
+			if (mode == "scores") {
 				var yourScore:MyTextField = new MyTextField(320, 25, ""+score, 0xFFFFFF, "center", 40);
 			
 				yourScore.x = this["ship"+player].x + (shipA.width - yourScore.width)*0.5
 			
 				addChild(yourScore);
+			} /*else {
+				waiting = false;
+				launchTime = getTimer() + 5999;
+				countDown = new MyTextField(320, 10, "00:00", 0xFFFFFF, "center", 40);
+				addChild(countDown);
+			}*/
+			
+			if (mode == "new") {
+				var message:MyTextField = new MyTextField(320, 20, "Invite code:", 0xFFFFFF, "center", 40);
+				
+				addChild(message);
+				
+				var code:MyTextField = new MyTextField(320, message.y + message.height+10, "ujg", 0xFFFFFF, "center", 40);
+				code.selectable = true;
+				code.mouseEnabled = true;
+				
+				addChild(code);
+			}
+			
+			if (mode == "join") {
+				message = new MyTextField(320, 20, "Invite code:", 0xFFFFFF, "center", 40);
+				
+				addChild(message);
+				
+				code = new MyTextField(320, message.y + message.height+10, "", 0xFFFFFF, "center", 40);
+				code.selectable = true;
+				code.mouseEnabled = true;
+				code.type = TextFieldType.INPUT;
+				Main.instance.stage.focus = code;
+				
+				addChild(code);
 			}
 		}
 		

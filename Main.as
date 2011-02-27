@@ -17,6 +17,12 @@ package
 		
 		public static var level: *;
 		
+		public static var url:String = "http://draknek.dev/games/birthday2/update.php";
+		
+		public static function message (params:String):void {
+			var url:String = url + "?" + params;
+		}
+		
 		public static function set screen (newScreenObj: Screen): void
 		{
 			if (screenObj)
@@ -28,7 +34,7 @@ package
 			
 			instance.addChild(screenObj);
 			
-			instance.stage.focus = instance.stage;
+			//instance.stage.focus = instance.stage;
 		}
 		
 		public static function get screen (): Screen

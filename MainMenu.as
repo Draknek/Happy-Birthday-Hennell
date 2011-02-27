@@ -24,11 +24,11 @@ package
 			addChild(joinGame);
 			
 			newGame.addEventListener(MouseEvent.CLICK, function ():void {
-				Main.screen = new Launchpad;
+				Main.screen = new Launchpad("new");
 			});
 			
 			joinGame.addEventListener(MouseEvent.CLICK, function ():void {
-				Main.screen = new Launchpad;
+				Main.screen = new Launchpad("join");
 			});
 		}
 	}
