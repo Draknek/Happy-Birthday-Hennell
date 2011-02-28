@@ -5,6 +5,7 @@ package
 	import flash.ui.*;
 	import flash.utils.getTimer;
 	import flash.utils.getDefinitionByName;
+	import flash.net.*;
 	
 	[SWF (width=640, height=480, frameRate=50)]
 	public class Main extends Sprite
@@ -19,8 +20,23 @@ package
 		
 		public static var url:String = "http://draknek.dev/games/birthday2/update.php";
 		
-		public static function message (params:String):void {
-			var url:String = url + "?" + params;
+		public static function message (params:String, callback:Function):void {
+			var request:URLRequest = new URLRequest(url + "?" + params);
+
+			trace("Sent: " + params);
+
+			var loader:URLLoader = new URLLoader();
+			loader.addEventListener(Event.COMPLETE, doComplete);
+			loader.load(request);
+			
+			function doComplete ():void
+			{
+				var response:String = loader.data;
+				
+				trace("Received: " + response);
+				
+				callback(response);
+			}
 		}
 		
 		public static function set screen (newScreenObj: Screen): void
@@ -34,7 +50,7 @@ package
 			
 			instance.addChild(screenObj);
 			
-			//instance.stage.focus = instance.stage;
+			instance.stage.focus = instance.stage;
 		}
 		
 		public static function get screen (): Screen

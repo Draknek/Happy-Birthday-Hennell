@@ -9,6 +9,7 @@ package
 		public function Screen ()
 		{
 			addEventListener(Event.ADDED_TO_STAGE, onAddedToStage);
+			addEventListener(Event.REMOVED_FROM_STAGE, onRemovedFromStage);
 			
 			bg();
 		}
@@ -18,7 +19,13 @@ package
 			init();
 		}
 		
+		private function onRemovedFromStage (param: *): void
+		{
+			uninit();
+		}
+		
 		public function init (): void {}
+		public function uninit (): void {}
 		public function update (): void {}
 		
 		public function bg (): void {

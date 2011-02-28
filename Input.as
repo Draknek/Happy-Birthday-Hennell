@@ -5,7 +5,7 @@ package
 	
 	public class Input
 	{
-		private static var keyboard : Object = new Object();
+		public static var keyboard : Object = new Object();
 		
 		public static function attach (dispObj : DisplayObject) : void
 		{
