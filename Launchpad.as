@@ -39,7 +39,7 @@ package
 		
 		public var timer:Timer;
 		
-		public var id:String;
+		public static var id:String;
 		
 		public var forRemoval:Array = [];
 		
@@ -71,14 +71,12 @@ package
 				yourScore.x = this["ship"+player].x + (shipA.width - yourScore.width)*0.5
 			
 				addChild(yourScore);
-			} /*else {
-				waiting = false;
-				launchTime = getTimer() + 5999;
-				countDown = new MyTextField(320, 10, "00:00", 0xFFFFFF, "center", 40);
-				addChild(countDown);
-			}*/
+				
+				checkForScore();
+			}
 			
 			if (mode == "new") {
+				player = "A";
 				Main.message("invite=1", setID);
 				
 				function setID (_id:String):void
@@ -107,6 +105,8 @@ package
 			}
 			
 			if (mode == "join") {
+				player = "B";
+				
 				var message:MyTextField = new MyTextField(320, 20, "Invite code:", 0xFFFFFF, "center", 40);
 				
 				addChild(message);
@@ -172,7 +172,7 @@ package
 			}
 		}
 		
-		private function checkForStartTime ():void
+		private function checkForStartTime (param:*=null):void
 		{
 			Main.message("id="+id+"&getstart=1", startCountdown);
 			
@@ -190,9 +190,31 @@ package
 					forRemoval.length = 0;
 				} else {
 					timer = new Timer(1000, 1);
-					timer.addEventListener(TimerEvent.TIMER, function (param: *): void {
-						Main.message("id="+id+"&getstart=1", startCountdown);
-					});
+					timer.addEventListener(TimerEvent.TIMER, checkForStartTime);
+					timer.start();
+				}
+			}
+		}
+		
+		private function checkForScore (param:*=null):void
+		{
+			Main.message("id="+id+"&age="+score+"&complete=1", showOtherScore);
+			
+			var launchpad:Launchpad = this;
+			
+			function showOtherScore (otherScore:String):void
+			{
+				if (otherScore) {
+					var otherPlayer:String = (player == "A") ? "B" : "A";
+					
+					var text:MyTextField = new MyTextField(320, 25, ""+otherScore, 0xFFFFFF, "center", 40);
+			
+					text.x = launchpad["ship"+otherPlayer].x + (shipA.width - text.width)*0.5
+			
+					addChild(text);
+				} else {
+					timer = new Timer(1000, 1);
+					timer.addEventListener(TimerEvent.TIMER, checkForScore);
 					timer.start();
 				}
 			}
