@@ -36,6 +36,7 @@ package
 		public var mode:String;
 		
 		public var code:MyTextField;
+		public var errorMessage:MyTextField;
 		
 		public var timer:Timer;
 		
@@ -66,7 +67,7 @@ package
 			addChild(pilotA);
 			
 			if (mode == "scores") {
-				var yourScore:MyTextField = new MyTextField(320, 25, ""+score, 0xFFFFFF, "center", 40);
+				var yourScore:MyTextField = new MyTextField(320, 10, "You are "+score+"\nyears old!", 0xFFFFFF, "center", 40);
 			
 				yourScore.x = this["ship"+player].x + (shipA.width - yourScore.width)*0.5
 			
@@ -126,9 +127,15 @@ package
 				
 				addChild(code);
 				
+				errorMessage = new MyTextField(320, code.y + code.height+10, "", 0xFF0000, "center", 20);
+				
+				addChild(errorMessage);
+				
 				forRemoval.push(message, code);
-				
-				
+			}
+			
+			if (mode == "scores" || mode == "join")
+			{
 				pilotB.x = shipB.x + (shipB.width - pilotB.width)*0.5;
 				pilotB.y = 480 - pilotB.height;
 				addChild(pilotB);
@@ -163,12 +170,21 @@ package
 			
 			var opponentID:String = code.text;
 			
-			Main.message("join="+opponentID, setID);
+			Main.message("join="+opponentID, setID, errorEvent);
 			
 			function setID (_id:String):void
 			{
 				id = _id;
 				checkForStartTime();
+			}
+			
+			function errorEvent (error:String):void
+			{
+				code.selectable = true;
+				code.mouseEnabled = true;
+				code.type = TextFieldType.INPUT;
+				
+				errorMessage.text = error;
 			}
 		}
 		
@@ -188,6 +204,14 @@ package
 						removeChild(o);
 					}
 					forRemoval.length = 0;
+					
+					if (int(delay) > 6000) {
+						timer = new Timer(int(delay)-6000, 1);
+						timer.addEventListener(TimerEvent.TIMER, AudioControl.playCountdown);
+						timer.start();
+					} else {
+						AudioControl.countdown.play(6000 - int(delay));
+					}
 				} else {
 					timer = new Timer(1000, 1);
 					timer.addEventListener(TimerEvent.TIMER, checkForStartTime);
@@ -207,7 +231,7 @@ package
 				if (otherScore) {
 					var otherPlayer:String = (player == "A") ? "B" : "A";
 					
-					var text:MyTextField = new MyTextField(320, 25, ""+otherScore, 0xFFFFFF, "center", 40);
+					var text:MyTextField = new MyTextField(320, 10, "They are "+otherScore+"\nyears old!", 0xFFFFFF, "center", 40);
 			
 					text.x = launchpad["ship"+otherPlayer].x + (shipA.width - text.width)*0.5
 			

@@ -126,15 +126,17 @@ package
 				Kongregate.api.stats.submit("Candles", 1);
 			}
 			
-			if (n == 23) {
+			var timer: Timer;
+			
+			/*if (n == 23) {
 				f.alpha = 0;
 				
-				var timer: Timer = new Timer(Math.random() * 4000 + 1000, 1);
+				timer = new Timer(Math.random() * 4000 + 1000, 1);
 				timer.addEventListener(TimerEvent.TIMER, function (param: *): void {f.alpha = 1});
 				timer.start();
 				
 				return;
-			}
+			}*/
 			
 			removeChild(f);
 			flameCount--;
@@ -213,7 +215,7 @@ package
 		{
 			var t:int = getTimer() - startTime;
 			
-			t = 20 - t / 1000;
+			t = 120 - t / 1000;
 			
 			var s:int = t % 60
 			

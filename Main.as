@@ -18,15 +18,17 @@ package
 		
 		public static var level: *;
 		
-		public static var url:String = "http://draknek.dev/games/birthday2/update.php";
+		public static var url:String = "http://www.draknek.org/games/birthday2/update.php";
 		
-		public static function message (params:String, callback:Function):void {
+		public static function message (params:String, callback:Function, errorCallback:Function = null):void {
 			var request:URLRequest = new URLRequest(url + "?" + params);
 
 			trace("Sent: " + params);
 
 			var loader:URLLoader = new URLLoader();
 			loader.addEventListener(Event.COMPLETE, doComplete);
+			loader.addEventListener(IOErrorEvent.IO_ERROR, doError);
+			
 			loader.load(request);
 			
 			function doComplete ():void
@@ -36,6 +38,17 @@ package
 				trace("Received: " + response);
 				
 				callback(response);
+			}
+			
+			function doError ():void
+			{
+				if (errorCallback != null) {
+					var response:String = loader.data;
+				
+					trace("Received: " + response);
+				
+					errorCallback(response);
+				}
 			}
 		}
 		
