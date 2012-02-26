@@ -5,6 +5,8 @@ package
 	import flash.geom.*;
 	import flash.utils.*;
 	
+	import com.greensock.*;
+	
 	public class Level extends Screen
 	{
 		[Embed(source="images/cake.png")]
@@ -28,14 +30,13 @@ package
 		public var line:Sprite;
 		
 		public var listening:Boolean = false;
+		public var blowing:Boolean = false;
 		
 		public function Level (_n: int)
 		{
 			n = _n;
 			
 			if (n == 1) {
-				AudioControl.play();
-				
 				startTime = getTimer();
 				
 				addChild(new MyTextField(320, 25, "Blow out candles with\nfive continuous breaths", 0xFFFFFF, "center", 25));
@@ -84,6 +85,8 @@ package
 				flameCount++;
 				
 				addChild(flame);
+				
+				c.flame = flame;
 			}
 			
 			line = new Sprite;
@@ -114,9 +117,9 @@ package
 			flameCount--;
 			
 			if (flameCount == 0) {
-				timer = new Timer(500, 1);
+				/*timer = new Timer(500, 1);
 				timer.addEventListener(TimerEvent.TIMER, function (param: *): void {Main.screen = new Level(n+1);});
-				timer.start();
+				timer.start();*/
 			}
 			
 			for (var i: int = 0; i < 4; i++) {
@@ -185,7 +188,7 @@ package
 					last = next;
 				}
 				
-				if (points.length < 6) {
+				if (! blowing) {
 					test(last.x, last.y, mouseX, mouseY);
 					//line.graphics.lineTo(mouseX, mouseY);
 				}
@@ -194,18 +197,35 @@ package
 		
 		public function test (x1:Number, y1:Number, x2:Number, y2:Number):void
 		{
+			var dx:Number;
+			var dy:Number;
+			var distSq:Number;
+			
 			for each (var c:Candle in candles) {
-				var distSq:Number = SqDistPointSegment(x1, y1, x2, y2, c.x, c.y);
-				
+				distSq = SqDistPointSegment(x1, y1, x2, y2, c.x, c.y);
+			
 				if (distSq < 25) {
-					c.target.visible = true;
+					if (blowing) {
+						if (c.flame && c.flame.parent) {
+							dx = c.x - x1;
+							dy = c.y - y1;
+							distSq = dx*dx+dy*dy;
+				
+							if (distSq < 100) {
+								remove(c.flame);
+								c.flame = null;
+							}
+						}
+					} else {
+						c.target.visible = true;
+					}
 				}
 			}
 			
 			// Draw
 			
-			var dx:Number = x2 - x1;
-			var dy:Number = y2 - y1;
+			dx = x2 - x1;
+			dy = y2 - y1;
 
 			var distance : Number = Math.sqrt(dx * dx + dy * dy);
 
@@ -272,7 +292,7 @@ package
 		}
 		
 		private function onKeyDown(e:KeyboardEvent):void {
-			if (e.keyCode == Key.ESCAPE) {
+			if (e.keyCode == Key.ESCAPE || e.keyCode == Key.R) {
 				points = [];
 			}
 		}
@@ -282,9 +302,37 @@ package
 		}
 		
 		private function onMouseUp(e:MouseEvent):void {
-			if (listening && points.length < 6) {
+			if (listening && ! blowing) {
+				if (points.length == 0) {
+					AudioControl.play();
+				}
 				points.push(new Point(mouseX, mouseY));
+				
+				if (points.length == 6) {
+					TweenLite.to(AudioControl, 0.5, {musicVolume: 0.15});
+					
+					AudioControl.blow();
+					
+					blowing = true;
+					
+					blowOut(false);
+				} else {
+					TweenLite.to(AudioControl, 1.0, {musicVolume: AudioControl.musicVolume + 0.01});
+				}
 			}
+		}
+		
+		private function blowOut (remove:Boolean = true):void {
+			if (remove) {
+				points.shift();
+			}
+			
+			if (points.length == 1) {
+				points = [];
+				return;
+			}
+			
+			TweenLite.to(points[0], 1.0, {x: points[1].x, y: points[1].y, onComplete: blowOut});
 		}
 	}
 }

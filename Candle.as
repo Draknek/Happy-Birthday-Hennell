@@ -12,6 +12,7 @@ package
 		public static var TargetGfx:Class;
 		
 		public var target:Bitmap;
+		public var flame:Flame;
 		
 		public function Candle (_x: Number, _y: Number)
 		{
@@ -35,7 +36,7 @@ package
 			target.visible = false;
 			
 			target.x = Math.floor(-target.width*0.5);
-			target.y = -target.height*0.5;
+			target.y = Math.floor(-target.height*0.5);
 			
 			addChild(target);
 		}
