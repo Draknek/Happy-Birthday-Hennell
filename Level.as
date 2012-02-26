@@ -389,6 +389,23 @@ package
 				addChildAt(cake, 0);
 			}
 			
+			var lineShape:Shape = new Shape;
+			
+			lineShape.graphics.lineStyle(0, 0xFFFFFF);
+			lineShape.graphics.moveTo(points[0].x, points[0].y);
+			lineShape.graphics.lineTo(points[1].x, points[1].y);
+			
+			var half1:BitmapData = new BitmapData(640, 480, true, 0x0);
+			
+			half1.draw(lineShape);
+			
+			if (! full.hitTest(new Point, 128, half1, new Point, 128)) {
+				points.length = 0;
+				return;
+			}
+			
+			half1.fillRect(half1.rect, 0x0);
+			
 			var dx:Number = points[1].x - points[0].x;
 			var dy:Number = points[1].y - points[0].y;
 			
@@ -410,7 +427,7 @@ package
 			
 			cake.mask = mask;
 			
-			var half1:BitmapData = new BitmapData(640, 480, true, 0x0);
+			
 			
 			half1.draw(cake);
 			
