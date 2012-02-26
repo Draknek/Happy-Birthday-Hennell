@@ -40,13 +40,15 @@ package
 		public var feedback:MyTextField;
 		public var instructions:MyTextField;
 		
+		public var cake: DisplayObject;
+		
 		public function Level (_n: int)
 		{
 			startTime = getTimer();
 			
 			addChild(instructions = new MyTextField(320, 25, "Blow out candles with\nfive continuous breaths", 0xFFFFFF, "center", 30));
 			
-			var cake: DisplayObject = new CakeGfx();
+			cake = new CakeGfx();
 			
 			cake.x = 320 - cake.width * 0.5;
 			cake.y = 240 - h * 0.5;
@@ -372,42 +374,131 @@ package
 		
 		private function cutTheCake ():void
 		{
+			var full:BitmapData
 			
-			cuts++;
+			if (cake.width == 640) {
+				full = (cake as Bitmap).bitmapData;
+			} else {
+				full = new BitmapData(640, 480, true, 0x0);
+				full.draw(cake, cake.transform.matrix);
+				
+				removeChild(cake);
+			
+				cake = new Bitmap(full);
+			
+				addChildAt(cake, 0);
+			}
+			
+			var dx:Number = points[1].x - points[0].x;
+			var dy:Number = points[1].y - points[0].y;
+			
+			var dz:Number = Math.sqrt(dx*dx + dy*dy);
+			
+			dx /= dz;
+			dy /= dz;
+			
+			var cx:Number = (points[0].x + points[1].x)*0.5;
+			var cy:Number = (points[0].y + points[1].y)*0.5;
+			
+			var mask:Shape = new Shape;
+			
+			mask.graphics.beginFill(0xFFFFFF);
+			mask.graphics.moveTo(cx + dx*1000, cy + dy*1000);
+			mask.graphics.lineTo(cx - dx*1000, cy - dy*1000);
+			mask.graphics.lineTo(cx + dy*1000, cy - dx*1000);
+			mask.graphics.endFill();
+			
+			cake.mask = mask;
+			
+			var half1:BitmapData = new BitmapData(640, 480, true, 0x0);
+			
+			half1.draw(cake);
+			
+			cake.mask = null;
+			
+			
+			mask.graphics.clear();
+			mask.graphics.beginFill(0xFFFFFF);
+			mask.graphics.moveTo(cx + dx*1000, cy + dy*1000);
+			mask.graphics.lineTo(cx - dx*1000, cy - dy*1000);
+			mask.graphics.lineTo(cx - dy*1000, cy + dx*1000);
+			mask.graphics.endFill();
+			
+			cake.mask = mask;
+			
+			var half2:BitmapData = new BitmapData(640, 480, true, 0x0);
+			
+			half2.draw(cake);
+			
+			cake.mask = null;
+			
+			cake.visible = false;
+			
+			var bitmap1:Bitmap = new Bitmap(half1);
+			var bitmap2:Bitmap = new Bitmap(half2);
+			
+			addChild(bitmap1);
+			addChild(bitmap2);
+			
+			cutting = false;
+			
+			var move:Number = 5;
+			
+			dx *= move;
+			dy *= move;
+			
+			TweenLite.to(bitmap1, 0.5, {x: dy, y: -dx});
+			TweenLite.to(bitmap2, 0.5, {x: -dy, y: dx});
+			
+			TweenLite.delayedCall(0.6, function ():void {
+				cutting = true;
+				
+				full.fillRect(full.rect, 0x0);
+				
+				full.draw(bitmap1, bitmap1.transform.matrix);
+				full.draw(bitmap2, bitmap2.transform.matrix);
+				
+				removeChild(bitmap1);
+				removeChild(bitmap2);
+				
+				cake.visible = true;
+				
+				cuts++;
+				
+				if (cuts == 5) {
+					cutting = false;
+			
+					instructions.text = "That's not 25 pieces!\nFortunately, you don't have\n24 friends anyway."
+			
+					TweenLite.to(AudioControl, 13.0, {musicVolume: 0, delay: 2});
+			
+					TweenLite.delayedCall(5.0, function ():void {
+						instructions.text = "You don't have any friends."
+					});
+			
+					TweenLite.delayedCall(7.0, function ():void {
+						instructions.text = "So the cake is all yours."
+					});
+			
+					TweenLite.delayedCall(9.0, function ():void {
+						instructions.text = "You win."
+					});
+			
+					TweenLite.delayedCall(11.0, function ():void {
+						instructions.text = "You win.\nLoser."
+					});
+			
+					TweenLite.delayedCall(16.0, function ():void {
+						instructions.text = "Happy Birthday Hennell!"
+						instructions.scaleX = instructions.scaleY = 1.5;
+						instructions.x -= 25;
+						AudioControl.musicVolume = 0.2;
+						flash = true;
+					});
+				}
+			});
 			
 			points.length = 0;
-			
-			if (cuts == 5) {
-				cutting = false;
-			
-				instructions.text = "That's not 25 pieces!\nFortunately, you don't have\n24 friends anyway."
-			
-				TweenLite.to(AudioControl, 9.0, {musicVolume: 0, delay: 2});
-			
-				TweenLite.delayedCall(3.0, function ():void {
-					instructions.text = "You don't have any friends."
-				});
-			
-				TweenLite.delayedCall(5.0, function ():void {
-					instructions.text = "So the cake is all yours."
-				});
-			
-				TweenLite.delayedCall(7.0, function ():void {
-					instructions.text = "You win."
-				});
-			
-				TweenLite.delayedCall(9.0, function ():void {
-					instructions.text = "You win.\nLoser."
-				});
-			
-				TweenLite.delayedCall(14.0, function ():void {
-					instructions.text = "Happy Birthday Hennell!"
-					instructions.scaleX = instructions.scaleY = 1.5;
-					instructions.x -= 25;
-					AudioControl.musicVolume = 0.2;
-					flash = true;
-				});
-			}
 		}
 		
 		private function blowOut (remove:Boolean = true):void {
