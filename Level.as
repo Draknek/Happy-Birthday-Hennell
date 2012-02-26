@@ -38,7 +38,7 @@ package
 				
 				startTime = getTimer();
 				
-				addChild(new MyTextField(320, 25, "Click to blow out candles", 0xFFFFFF, "center", 25));
+				addChild(new MyTextField(320, 25, "Blow out candles with\nfive continuous breaths", 0xFFFFFF, "center", 25));
 			} else if (n == 23) {
 				addChild(new MyTextField(320, 20, "Happy Birthday\nHennell", 0xFFFFFF, "center", 60));
 				
