@@ -41,6 +41,11 @@ package
 			
 			scaleX = Math.random() * 0.5 + 1;
 			scaleY = Math.random() * 0.5 + 1;
+			
+			if (parent && Level(parent).feedback) {
+				scaleX *= 1.25;
+				scaleY *= 1.5;
+			}
 		}
 		
 		private function onMouseDown(e:MouseEvent):void {

@@ -24,7 +24,7 @@ package
 		public function bg (): void {
 			graphics.clear();
 			
-			graphics.beginFill(int(Math.random()*0xFFFFFF));
+			graphics.beginFill(int(0x509ffc));
 			graphics.drawRect(0, 0, 640, 480);
 			graphics.endFill();
 		}

@@ -21,7 +21,9 @@ package
 		public static var mute : Boolean = false;
 		
 		public static function play (): void {
-			musicChannel = music.play(0, int.MAX_VALUE, musicTransform);
+			if (! musicChannel) {
+				musicChannel = music.play(0, int.MAX_VALUE, musicTransform);
+			}
 		}
 		
 		public static function get musicVolume ():Number {

@@ -29,30 +29,22 @@ package
 		
 		public var line:Sprite;
 		
+		public var cuts:int = 0;
+		
 		public var listening:Boolean = false;
 		public var blowing:Boolean = false;
+		public var cutting:Boolean = false;
+		public var flash:Boolean = false;
+		public var blowFrom:Point;
+		
+		public var feedback:MyTextField;
+		public var instructions:MyTextField;
 		
 		public function Level (_n: int)
 		{
-			n = _n;
+			startTime = getTimer();
 			
-			if (n == 1) {
-				startTime = getTimer();
-				
-				addChild(new MyTextField(320, 25, "Blow out candles with\nfive continuous breaths", 0xFFFFFF, "center", 25));
-			} else if (n == 23) {
-				addChild(new MyTextField(320, 20, "Happy Birthday\nHennell", 0xFFFFFF, "center", 60));
-				
-				if (Kongregate.api) {
-					Kongregate.api.stats.submit("Time", getTimer() - startTime);
-				}
-			} else {
-				addChild(new MyTextField(320, 25, "Level " + n, 0xFFFFFF, "center", 45));
-			}
-			
-			if (Kongregate.api) {
-				Kongregate.api.stats.submit("Level", n);
-			}
+			addChild(instructions = new MyTextField(320, 25, "Blow out candles with\nfive continuous breaths", 0xFFFFFF, "center", 30));
 			
 			var cake: DisplayObject = new CakeGfx();
 			
@@ -60,6 +52,50 @@ package
 			cake.y = 240 - h * 0.5;
 			
 			addChild(cake);
+			
+			reset();
+			
+			Main.instance.stage.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
+			Main.instance.stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
+		}
+		
+		public function reset ():void
+		{
+			flameCount = 0;
+			
+			blowFrom = null;
+			
+			cutting = false;
+			
+			if (feedback) {
+				removeChild(feedback);
+				feedback = null;
+			}
+			
+			if (line) {
+				var displayObject:*;
+				
+				for each (displayObject in candles) {
+					if (displayObject.parent) {
+						removeChild(displayObject);
+					}
+				}
+				
+				for each (displayObject in flames) {
+					if (displayObject.parent) {
+						removeChild(displayObject);
+					}
+				}
+				
+				candles = [];
+				flames = [];
+				
+				points = [];
+				
+				blowing = false;
+		
+				removeChild(line);
+			}
 			
 			for (var i: int = 0; i < 25; i++) {
 				var ix:int = int(i / 5) - 2;
@@ -93,9 +129,7 @@ package
 			
 			addChild(line);
 			
-			Main.instance.stage.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
-			Main.instance.stage.addEventListener(MouseEvent.MOUSE_UP, onMouseUp);
-			Main.instance.stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
+			AudioControl.musicVolume = 0;
 		}
 		
 		public function remove (f: Flame): void {
@@ -153,8 +187,12 @@ package
 			frame++;
 			
 			//if (Math.random() < 0.15) {
-			if (frame % 10 == 0) {
-				//bg();
+			if (flash && frame % 10 == 0) {
+				graphics.clear();
+			
+				graphics.beginFill(int(Math.random() * 0xFFFFFF));
+				graphics.drawRect(0, 0, 640, 480);
+				graphics.endFill();
 			}
 			
 			for each (var f: Flame in flames) {
@@ -170,7 +208,7 @@ package
 			line.graphics.clear();
 			
 			if (points[0]) {
-				line.graphics.lineStyle(2, 0x000000);
+				line.graphics.lineStyle(2, cutting ? 0xFFFFFF : 0x000000);
 			
 				var last:Point;
 				var next:Point;
@@ -188,7 +226,7 @@ package
 					last = next;
 				}
 				
-				if (! blowing) {
+				if ((cutting && points.length == 1) || ! blowing) {
 					test(last.x, last.y, mouseX, mouseY);
 					//line.graphics.lineTo(mouseX, mouseY);
 				}
@@ -201,23 +239,27 @@ package
 			var dy:Number;
 			var distSq:Number;
 			
-			for each (var c:Candle in candles) {
-				distSq = SqDistPointSegment(x1, y1, x2, y2, c.x, c.y);
-			
-				if (distSq < 25) {
+			if (! cutting) {
+				for each (var c:Candle in candles) {
 					if (blowing) {
-						if (c.flame && c.flame.parent) {
-							dx = c.x - x1;
-							dy = c.y - y1;
-							distSq = dx*dx+dy*dy;
-				
-							if (distSq < 100) {
-								remove(c.flame);
-								c.flame = null;
-							}
-						}
+						distSq = SqDistPointSegment(blowFrom.x, blowFrom.y, x2, y2, c.x, c.y);
 					} else {
-						c.target.visible = true;
+						distSq = SqDistPointSegment(x1, y1, x2, y2, c.x, c.y);
+					}
+			
+					if (distSq < 25) {
+						if (blowing) {
+							if (c.flame && c.flame.parent) {
+								distSq = SqDistPointSegment(blowFrom.x, blowFrom.y, x1, y1, c.x, c.y);
+				
+								if (distSq < 49) {
+									remove(c.flame);
+									c.flame = null;
+								}
+							}
+						} else {
+							c.target.visible = true;
+						}
 					}
 				}
 			}
@@ -298,17 +340,23 @@ package
 		}
 		
 		private function onMouseDown(e:MouseEvent):void {
-			listening = true;
-		}
-		
-		private function onMouseUp(e:MouseEvent):void {
-			if (listening && ! blowing) {
+			if (cutting) {
+				points.push(new Point(mouseX, mouseY));
+				
+				if (points.length == 2) {
+					cutTheCake();
+				}
+				
+				return;
+			}
+			
+			if (! blowing) {
 				if (points.length == 0) {
 					AudioControl.play();
 				}
 				points.push(new Point(mouseX, mouseY));
 				
-				if (points.length == 6) {
+				if (points.length == 1) {
 					TweenLite.to(AudioControl, 0.5, {musicVolume: 0.15});
 					
 					AudioControl.blow();
@@ -322,13 +370,76 @@ package
 			}
 		}
 		
+		private function cutTheCake ():void
+		{
+			
+			cuts++;
+			
+			points.length = 0;
+			
+			if (cuts == 5) {
+				cutting = false;
+			
+				instructions.text = "That's not 25 pieces!\nFortunately, you don't have\n24 friends anyway."
+			
+				TweenLite.to(AudioControl, 9.0, {musicVolume: 0, delay: 2});
+			
+				TweenLite.delayedCall(3.0, function ():void {
+					instructions.text = "You don't have any friends."
+				});
+			
+				TweenLite.delayedCall(5.0, function ():void {
+					instructions.text = "So the cake is all yours."
+				});
+			
+				TweenLite.delayedCall(7.0, function ():void {
+					instructions.text = "You win."
+				});
+			
+				TweenLite.delayedCall(9.0, function ():void {
+					instructions.text = "You win.\nLoser."
+				});
+			
+				TweenLite.delayedCall(14.0, function ():void {
+					instructions.text = "Happy Birthday Hennell!"
+					instructions.scaleX = instructions.scaleY = 1.5;
+					instructions.x -= 25;
+					AudioControl.musicVolume = 0.2;
+					flash = true;
+				});
+			}
+		}
+		
 		private function blowOut (remove:Boolean = true):void {
 			if (remove) {
 				points.shift();
 			}
 			
+			blowFrom = points[0].clone();
+			
 			if (points.length == 1) {
 				points = [];
+				
+				if (true || flameCount == 0) {
+					for each (var c:Candle in candles) {
+						TweenLite.to(c, 3.0, {y: c.y - 480, delay: Math.random() + 0.5});
+					}
+					for each (var f:Flame in flames) {
+						if (f.parent) {
+							removeChild(f);
+						}
+					}
+					
+					cutting = true;
+					
+					instructions.text = "Excellent. Now cut the cake into\n25 slices using only 5 cuts"
+					
+				} else {
+					feedback = new MyTextField(320, 350, "FAIL!", 0xFFFFFF, "center", 60);
+					addChild(feedback);
+					TweenLite.delayedCall(1.5, reset);
+				}
+				
 				return;
 			}
 			
