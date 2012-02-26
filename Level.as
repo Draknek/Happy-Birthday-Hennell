@@ -2,6 +2,7 @@ package
 {
 	import flash.display.*;
 	import flash.events.*;
+	import flash.geom.*;
 	import flash.utils.*;
 	
 	public class Level extends Screen
@@ -21,6 +22,12 @@ package
 		public var n: int;
 		
 		public static var startTime: int;
+		
+		public var points:Array = [];
+		
+		public var line:Sprite;
+		
+		public var listening:Boolean = false;
 		
 		public function Level (_n: int)
 		{
@@ -53,12 +60,12 @@ package
 			
 			addChild(cake);
 			
-			for (var i: int = 0; i < n; i++) {
-				var theta: Number = Math.random() * Math.PI * 2;
-				var r: Number = Math.sqrt(Math.random());
+			for (var i: int = 0; i < 25; i++) {
+				var ix:int = int(i / 5) - 2;
+				var iy:int = int(i % 5) - 2;
 				
-				var _x: Number = 320 + Math.cos(theta) * r * w * 0.5;
-				var _y: Number = 240 + Math.sin(theta) * r * h * 0.5;
+				var _x: Number = 320 + ix * w * 0.15 + iy*10;
+				var _y: Number = 240 + iy * h * 0.15 - ix*4;
 				
 				var candle: Candle = new Candle(_x, _y);
 				
@@ -78,6 +85,14 @@ package
 				
 				addChild(flame);
 			}
+			
+			line = new Sprite;
+			
+			addChild(line);
+			
+			Main.instance.stage.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
+			Main.instance.stage.addEventListener(MouseEvent.MOUSE_UP, onMouseUp);
+			Main.instance.stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
 		}
 		
 		public function remove (f: Flame): void {
@@ -136,16 +151,106 @@ package
 			
 			//if (Math.random() < 0.15) {
 			if (frame % 10 == 0) {
-				bg();
+				//bg();
 			}
 			
 			for each (var f: Flame in flames) {
 				f.update();
 			}
 			
+			for each (var c: Candle in candles) {
+				c.update();
+			}
+			
 			particles = particles.filter(removeParticlesFilter);
+			
+			line.graphics.clear();
+			
+			if (points[0]) {
+				line.graphics.lineStyle(2, 0x000000);
+			
+				var last:Point;
+				var next:Point;
+				
+				last = points[0];
+				line.graphics.moveTo(last.x, last.y);
+				
+				for (var i:int = 1; i < points.length; i++) {
+					next = points[i];
+					
+					//line.graphics.lineTo(points[i].x, points[i].y);
+					
+					test(last.x, last.y, next.x, next.y);
+					
+					last = next;
+				}
+				
+				if (points.length < 6) {
+					test(last.x, last.y, mouseX, mouseY);
+					//line.graphics.lineTo(mouseX, mouseY);
+				}
+			}
 		}
 		
+		public function test (x1:Number, y1:Number, x2:Number, y2:Number):void
+		{
+			for each (var c:Candle in candles) {
+				var distSq:Number = SqDistPointSegment(x1, y1, x2, y2, c.x, c.y);
+				
+				if (distSq < 25) {
+					c.target.visible = true;
+				}
+			}
+			
+			// Draw
+			
+			var dx:Number = x2 - x1;
+			var dy:Number = y2 - y1;
+
+			var distance : Number = Math.sqrt(dx * dx + dy * dy);
+
+			var _dashSpace : Number = 5;
+
+			// calculate the number of dashed to draw based on the distance between each point
+			// always draw at least 1 line
+			var loops : int = Math.max(1, Math.floor(distance / _dashSpace));
+
+			// dash drawing loop
+			for (var j : int = 0;j < loops;j++) {
+				var a : Number = j / loops;
+				
+				if (j % 2) {
+					line.graphics.moveTo(x1 + (dx * a), y1 + (dy * a));
+				} else {
+					line.graphics.lineTo(x1 + (dx * a), y1 + (dy * a));
+				}
+			}
+			
+			line.graphics.lineTo(x2, y2);
+		}
+		
+		// Returns the squared distance between point c and segment ab
+		public static function SqDistPointSegment(ax:Number, ay:Number, bx:Number, by:Number, cx:Number, cy:Number):Number
+		{
+			var abx:Number = bx - ax;
+			var aby:Number = by - ay;
+			var acx:Number = cx - ax;
+			var acy:Number = cy - ay;
+			var bcx:Number = cx - bx;
+			var bcy:Number = cy - by;
+	
+			var e:Number = acx*abx + acy*aby;
+	
+			// Handle cases where c projects outside ab
+			if (e <= 0.0) return acx*acx + acy*acy;
+	
+			var f:Number = abx*abx + aby*aby;
+	
+			if (e >= f) return bcx*bcx + bcy*bcy;
+	
+			// Handle case where c projects onto ab
+			return acx*acx + acy*acy - e * e / f;
+		}
 		
 		private function removeParticlesFilter (p: Smoke, index: int, arr: Array): Boolean
 		{
@@ -163,6 +268,22 @@ package
 			{
 				// p remains in array
 				return true;
+			}
+		}
+		
+		private function onKeyDown(e:KeyboardEvent):void {
+			if (e.keyCode == Key.ESCAPE) {
+				points = [];
+			}
+		}
+		
+		private function onMouseDown(e:MouseEvent):void {
+			listening = true;
+		}
+		
+		private function onMouseUp(e:MouseEvent):void {
+			if (listening && points.length < 6) {
+				points.push(new Point(mouseX, mouseY));
 			}
 		}
 	}

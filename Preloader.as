@@ -12,7 +12,7 @@ package
 			
 			Main.screen = preloader;
 			
-			preloader.stage.addEventListener(MouseEvent.MOUSE_DOWN, preloader.onMouseDown);
+			//preloader.stage.addEventListener(MouseEvent.MOUSE_DOWN, preloader.onMouseDown);
 		}
 		
 		private var startup: Function;
@@ -49,10 +49,12 @@ package
 				text.scaleX = 2.5;
 				text.scaleY = 2.5;
 				
-				text.text = "Make click for play"
+				text.text = "100%";//"Make click for play"
 				
-				text.y = 240 - text.height * 0.5;
-				text.x = 320 - text.width * 0.5;
+				//text.y = 240 - text.height * 0.5;
+				//text.x = 320 - text.width * 0.5;
+				
+				startup();
 			} else {
 				var p:Number = (this.loaderInfo.bytesLoaded / this.loaderInfo.bytesTotal);
 				

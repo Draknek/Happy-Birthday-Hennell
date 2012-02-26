@@ -29,10 +29,10 @@ package
 			
 			addChild(img);
 			
-			buttonMode = true;
+			//buttonMode = true;
 			mouseChildren = false;
 			
-			addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
+			//addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
 		}
 		
 		public function update (): void

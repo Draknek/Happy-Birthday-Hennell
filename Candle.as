@@ -8,6 +8,11 @@ package
 		[Embed(source="images/candle.png")]
 		public static var CandleGfx:Class;
 		
+		[Embed(source="images/target.png")]
+		public static var TargetGfx:Class;
+		
+		public var target:Bitmap;
+		
 		public function Candle (_x: Number, _y: Number)
 		{
 			x = _x;
@@ -24,11 +29,22 @@ package
 			y -= img.height;
 			
 			addChild(img);
+			
+			target = new TargetGfx;
+			
+			target.visible = false;
+			
+			target.x = Math.floor(-target.width*0.5);
+			target.y = -target.height*0.5;
+			
+			addChild(target);
 		}
 		
 		public function update (): void
 		{
+			//var dzSq:Number = mouseX*mouseX + mouseY*mouseY;
 			
+			target.visible = false;//(dzSq < 25);
 		}
 	}
 }
