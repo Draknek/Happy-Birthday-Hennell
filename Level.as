@@ -336,8 +336,10 @@ package
 		}
 		
 		private function onKeyDown(e:KeyboardEvent):void {
-			if (e.keyCode == Key.ESCAPE || e.keyCode == Key.R) {
-				points = [];
+			if (! cutting && ! blowing) {
+				if (e.keyCode == Key.ESCAPE || e.keyCode == Key.R) {
+					points = [];
+				}
 			}
 		}
 		
