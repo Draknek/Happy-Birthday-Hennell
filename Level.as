@@ -358,7 +358,7 @@ package
 				}
 				points.push(new Point(mouseX, mouseY));
 				
-				if (points.length == 1) {
+				if (points.length == 6) {
 					TweenLite.to(AudioControl, 0.5, {musicVolume: 0.15});
 					
 					AudioControl.blow();
@@ -528,7 +528,7 @@ package
 			if (points.length == 1) {
 				points = [];
 				
-				if (true || flameCount == 0) {
+				if (flameCount == 0) {
 					for each (var c:Candle in candles) {
 						TweenLite.to(c, 3.0, {y: c.y - 480, delay: Math.random() + 0.5});
 					}
